@@ -3,7 +3,6 @@ import sys
 from datetime import datetime
 import time
 
-
 from huggingface_hub import login
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -19,7 +18,6 @@ def op_log(message="ping"):
 
 # Global token, nice .....
 token = ""
-
 
 gpt_sw3_S = "AI-Sweden-Models/gpt-sw3-126m-instruct"
 gpt_sw3_M = "AI-Sweden-Models/gpt-sw3-1.3b-instruct"
@@ -50,10 +48,12 @@ def question_and_answer(model_name, model, tokenizer, contextual_framework, task
     op_log(model_name + str(run_time))
     op_log(f"Finished task/query {model_name}")
 
+
 def abbreviate(model_name, model, tokenizer):
     question_and_answer(model_name, model, tokenizer,
                         "Skapa en sammanfattning med de viktigaste punkterna från följande text i form av en punktlista",
                         polens_historia())
+
 
 def load_model(model_name):
     if os.path.exists("/mnt/gptsw3-models"):
@@ -160,12 +160,12 @@ def haiku_metrics():
 
 if __name__ == '__main__':
     op_log(f"Start of gptsw3.py on {os.environ.get('EC2_TYPE')} in region {os.environ.get('REGION')} ")
-    #long_running_task_with_periodic_updates(1200, 10)
+    # long_running_task_with_periodic_updates(1200, 10)
     authenticate()
-    model_name = gpt_sw3_L
-    #model = load_model(model_name)
-    #tokenizer = load_tokenizer(model_name)
-    #abbreviate(model_name, model, tokenizer)
+    sw3model = gpt_sw3_L
+    # model = load_model(model_name)
+    # tokenizer = load_tokenizer(model_name)
+    # abbreviate(model_name, model, tokenizer)
     # haiku_metrics()
-    chat_multiline_with_model(model_name)
+    chat_multiline_with_model(sw3model)
     op_log("Shutdown")
