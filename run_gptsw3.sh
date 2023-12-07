@@ -3,7 +3,7 @@ date -u
 touch tmp.txt
 # cat hf_token.source
 # source hf_token.source
-source env.source
+# source env.source
 echo "Inside run_gptsw3.sh ${HF_TOKEN}"
 export HF_TOKEN
 rm stdout_dump.txt
