@@ -38,14 +38,14 @@ def question_and_answer(model_name, model, tokenizer, contextual_framework, task
     start_time = datetime.now()
     op_log(f"Generating answer {model_name}")
     input_ids = tokenizer.encode(prompt, return_tensors='pt')
-    output = model.generate(input_ids, max_length=2048)
-    response = tokenizer.decode(output[0], skip_special_tokens=True)
+    output = model.generate(input_ids, max_length=2048)[0]
+    response = tokenizer.decode(output, skip_special_tokens=True)
     op_log(f"Generated answer {model_name}")
     stop_time = datetime.now()
     run_time = stop_time - start_time
     op_log(f"Task/query ({model_name}) [{len(prompt)}]: {prompt}")
     op_log(f"Model response [{len(response)}]: {response}")
-    op_log(model_name + str(run_time))
+    op_log(f"{model_name}: {run_time}")
     op_log(f"Finished task/query {model_name}")
 
 
@@ -162,10 +162,10 @@ if __name__ == '__main__':
     op_log(f"Start of gptsw3.py on {os.environ.get('EC2_TYPE')} in region {os.environ.get('REGION')} ")
     # long_running_task_with_periodic_updates(1200, 10)
     authenticate()
-    sw3model = gpt_sw3_L
+    sw3model = gpt_sw3_S
     # model = load_model(model_name)
     # tokenizer = load_tokenizer(model_name)
     # abbreviate(model_name, model, tokenizer)
-    # haiku_metrics()
-    chat_multiline_with_model(sw3model)
+    haiku_metrics()
+    # chat_multiline_with_model(sw3model)
     op_log("Shutdown")
