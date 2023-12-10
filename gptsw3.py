@@ -4,6 +4,7 @@ from datetime import datetime
 import time
 
 from huggingface_hub import login
+import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
@@ -33,13 +34,29 @@ def load_tokenizer(model_name):
 
 
 def question_and_answer(model_name, model, tokenizer, contextual_framework, task_query):
-    prompt = contextual_framework + " " + task_query
+    prompt = f"""
+    <|endoftext|><s>
+    User:
+    {contextual_framework} 
+    {task_query}
+    <s>
+    Bot:
+    """.strip()
+
+    # prompt = contextual_framework + " " + task_query
     op_log(f"Starting task/query {model_name} : {prompt}")
     start_time = datetime.now()
     op_log(f"Generating answer {model_name}")
     input_ids = tokenizer.encode(prompt, return_tensors='pt')
-    output = model.generate(input_ids, max_length=2048)[0]
-    response = tokenizer.decode(output, skip_special_tokens=True)
+    generated_token_ids = model.generate(
+        inputs=input_ids,
+        max_new_tokens=200,
+        do_sample=True,
+        temperature=0.6,
+        top_p=1,
+    )[0]
+    # output = model.generate(input_ids, max_length=2048)[0]
+    response = tokenizer.decode(generated_token_ids, skip_special_tokens=True)
     op_log(f"Generated answer {model_name}")
     stop_time = datetime.now()
     run_time = stop_time - start_time
@@ -63,6 +80,9 @@ def load_model(model_name):
     else:
         op_log(f"Model: loading start {model_name}")
         model = AutoModelForCausalLM.from_pretrained(model_name, token=token)
+        device = "cuda:0" if torch.cuda.is_available() else "cpu"
+        model.eval()
+        model.to(device)
         op_log(f"Model: loading finished {model_name}")
     return model
 
@@ -162,10 +182,13 @@ if __name__ == '__main__':
     op_log(f"Start of gptsw3.py on {os.environ.get('EC2_TYPE')} in region {os.environ.get('REGION')} ")
     # long_running_task_with_periodic_updates(1200, 10)
     authenticate()
-    sw3model = gpt_sw3_S
+    sw3model = gpt_sw3_M
+    while True:
+        haiku_cold_luke_hot(sw3model)
+
     # model = load_model(model_name)
     # tokenizer = load_tokenizer(model_name)
     # abbreviate(model_name, model, tokenizer)
-    haiku_metrics()
+    # haiku_metrics()
     # chat_multiline_with_model(sw3model)
     op_log("Shutdown")
