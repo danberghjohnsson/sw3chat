@@ -7,12 +7,14 @@ from huggingface_hub import login
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
+start_date = datetime.now().isoformat(timespec='hours')
+
 
 def op_log(message="ping"):
     now = datetime.now().isoformat()
     print(now, " ", message)
     # Appending to a file
-    with open('stdout_dump.txt', 'a') as file:
+    with open(f'stdout_dump_{start_date}.txt', 'a', encoding="UTF-8") as file:
         now_message = now + " " + message + "\n"
         file.write(now_message)
 
@@ -182,7 +184,7 @@ if __name__ == '__main__':
     op_log(f"Start of gptsw3.py on {os.environ.get('EC2_TYPE')} in region {os.environ.get('REGION')} ")
     # long_running_task_with_periodic_updates(1200, 10)
     authenticate()
-    sw3model = gpt_sw3_M
+    sw3model = gpt_sw3_L
     while True:
         haiku_cold_luke_hot(sw3model)
 
