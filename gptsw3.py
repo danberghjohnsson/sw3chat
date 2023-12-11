@@ -36,7 +36,7 @@ def load_tokenizer(model_name):
 
 
 def question_and_answer(model_name, model, tokenizer, contextual_framework, task_query):
-    prompt = f"""
+    prompt = f"""    
     <|endoftext|><s>
     User:
     {contextual_framework} 
@@ -45,7 +45,6 @@ def question_and_answer(model_name, model, tokenizer, contextual_framework, task
     Bot:
     """.strip()
 
-    # prompt = contextual_framework + " " + task_query
     op_log(f"Starting task/query {model_name} : {prompt}")
     start_time = datetime.now()
     op_log(f"Generating answer {model_name}")
@@ -56,8 +55,9 @@ def question_and_answer(model_name, model, tokenizer, contextual_framework, task
         do_sample=True,
         temperature=0.6,
         top_p=1,
+        eos_token_id=tokenizer.encode('<s>'),
+        repetition_penalty=1.1
     )[0]
-    # output = model.generate(input_ids, max_length=2048)[0]
     response = tokenizer.decode(generated_token_ids, skip_special_tokens=True)
     op_log(f"Generated answer {model_name}")
     stop_time = datetime.now()
@@ -109,7 +109,7 @@ def chat_multiline_with_model(name, answer_max_length=250):
 
         op_log("Generating a response")
         # Generate a response
-        output = model.generate(input_ids, max_length=answer_max_length)
+        output = model.generate(input_ids, max_length=answer_max_length, repetition_penalty=1.1)
         response = tokenizer.decode(output[0], skip_special_tokens=True)
         print(name, ":", response)
 
@@ -184,7 +184,7 @@ if __name__ == '__main__':
     op_log(f"Start of gptsw3.py on {os.environ.get('EC2_TYPE')} in region {os.environ.get('REGION')} ")
     # long_running_task_with_periodic_updates(1200, 10)
     authenticate()
-    sw3model = gpt_sw3_L
+    sw3model = gpt_sw3_M
     while True:
         haiku_cold_luke_hot(sw3model)
 
