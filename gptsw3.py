@@ -22,10 +22,17 @@ def op_log(message="ping"):
 # Global token, nice .....
 token = ""
 
-gpt_sw3_S = "AI-Sweden-Models/gpt-sw3-126m-instruct"
-gpt_sw3_M = "AI-Sweden-Models/gpt-sw3-1.3b-instruct"
-gpt_sw3_L = "AI-Sweden-Models/gpt-sw3-6.7b-v2-instruct"
-gpt_sw3_XL = "AI-Sweden-Models/gpt-sw3-20b-instruct"
+gpt_sw3_instruct_XS = "AI-Sweden-Models/gpt-sw3-126m-instruct"
+gpt_sw3_instruct_M = "AI-Sweden-Models/gpt-sw3-1.3b-instruct"
+gpt_sw3_instruct_L = "AI-Sweden-Models/gpt-sw3-6.7b-v2-instruct"
+gpt_sw3_instruct_XL = "AI-Sweden-Models/gpt-sw3-20b-instruct"
+
+gpt_sw3_base_XS = "AI-Sweden-Models/gpt-sw3-126m"
+gpt_sw3_base_S = "AI-Sweden-Models/gpt-sw3-356m"
+gpt_sw3_base_M = "AI-Sweden-Models/gpt-sw3-1.3b"
+gpt_sw3_base_L = "AI-Sweden-Models/gpt-sw3-6.7b-v2"
+gpt_sw3_base_XL = "AI-Sweden-Models/gpt-sw3-20b"
+gpt_sw3_base_XXL = "AI-Sweden-Models/gpt-sw3-40b"
 
 
 def load_tokenizer(model_name):
@@ -35,7 +42,7 @@ def load_tokenizer(model_name):
     return tokenizer
 
 
-def question_and_answer(model_name, model, tokenizer, contextual_framework, task_query):
+def question_and_answer(task_info, model, tokenizer, contextual_framework, task_query):
     prompt = f"""    
     <|endoftext|><s>
     User:
@@ -45,9 +52,9 @@ def question_and_answer(model_name, model, tokenizer, contextual_framework, task
     Bot:
     """.strip()
 
-    op_log(f"Starting task/query {model_name} : {prompt}")
+    op_log(f"Starting task/query {task_info} : {prompt}")
     start_time = datetime.now()
-    op_log(f"Generating answer {model_name}")
+    op_log(f"Generating answer start {task_info}")
     input_ids = tokenizer.encode(prompt, return_tensors='pt')
     generated_token_ids = model.generate(
         inputs=input_ids,
@@ -59,18 +66,18 @@ def question_and_answer(model_name, model, tokenizer, contextual_framework, task
         repetition_penalty=1.1
     )[0]
     response = tokenizer.decode(generated_token_ids, skip_special_tokens=True)
-    op_log(f"Generated answer {model_name}")
+    op_log(f"Generated answer finished {task_info}")
     stop_time = datetime.now()
     run_time = stop_time - start_time
-    op_log(f"Task/query ({model_name}) [{len(prompt)}]: {prompt}")
+    op_log(f"Task/query ({task_info}) [{len(prompt)}]: {prompt}")
     op_log(f"Model response [{len(response)}]: {response}")
-    op_log(f"{model_name}: {run_time}")
-    op_log(f"Finished task/query {model_name}")
+    op_log(f"{task_info}: {run_time}")
+    op_log(f"Finished task/query {task_info}")
 
 
 def abbreviate(model_name, model, tokenizer):
     question_and_answer(model_name, model, tokenizer,
-                        "Skapa en sammanfattning med de viktigaste punkterna från följande text i form av en punktlista",
+                        "Här kommer en text, skapa en sammanfattning",
                         polens_historia())
 
 
@@ -98,20 +105,11 @@ def chat_multiline_with_model(name, answer_max_length=250):
     print("Starting chat with GPT model. Type 'exit' to end.")
     while True:
         op_log("input")
-        input_text = read_multiline_input("Du: ")
-
+        input_text = input("Du: ")
+        # input_text = read_multiline_input("Du: ")
         if input_text.lower() == "exit":
             break
-        prompt = f"Svara med max {answer_max_length} ord.\n {input_text}"
-        op_log("Encoding the input text")
-        # Encode the input text
-        input_ids = tokenizer.encode(prompt, return_tensors='pt')
-
-        op_log("Generating a response")
-        # Generate a response
-        output = model.generate(input_ids, max_length=answer_max_length, repetition_penalty=1.1)
-        response = tokenizer.decode(output[0], skip_special_tokens=True)
-        print(name, ":", response)
+        question_and_answer(f"chat {name}", model, tokenizer, "Svara vänligt", input_text)
 
 
 def read_multiline_input(prompt):
@@ -138,7 +136,7 @@ def read_file_content(filename):
 
 
 def polens_historia():
-    return read_file_content("polens_historia_wikipedia_mod.txt")
+    return read_file_content("polens_historia_wikipedia.txt")
 
 
 def haiku_cold_luke_hot(model_name):
@@ -146,16 +144,16 @@ def haiku_cold_luke_hot(model_name):
     tokenizer = load_tokenizer(model_name)
     model = load_model(model_name)
     op_log(f"Cold haiku {model_name}")
-    haiku(model, model_name, tokenizer)
+    haiku(model, f"{model_name} cold", tokenizer)
     op_log(f"Luke haiku {model_name}")
-    haiku(model, model_name, tokenizer)
+    haiku(model, f"{model_name} luke", tokenizer)
     op_log(f"Hot haiku {model_name}")
-    haiku(model, model_name, tokenizer)
+    haiku(model, f"{model_name} hot", tokenizer)
     op_log(f"Finished haikus {model_name}")
 
 
-def haiku(model, model_name, tokenizer):
-    question_and_answer(model_name, model, tokenizer, "Du är en poet som kan devops.",
+def haiku(model, model_temperature, tokenizer):
+    question_and_answer(f"haiku {model_temperature}", model, tokenizer, "Du är en poet som kan devops.",
                         "Skriv två haikus om kubernetes: en argumenterar för och en emot.")
 
 
@@ -174,23 +172,22 @@ def authenticate():
 
 
 def haiku_metrics():
-    haiku_cold_luke_hot(gpt_sw3_S)
-    haiku_cold_luke_hot(gpt_sw3_M)
-    haiku_cold_luke_hot(gpt_sw3_L)
-    haiku_cold_luke_hot(gpt_sw3_XL)
+    haiku_cold_luke_hot(gpt_sw3_base_XS)
+    haiku_cold_luke_hot(gpt_sw3_instruct_XS)
+    haiku_cold_luke_hot(gpt_sw3_base_S)
+    haiku_cold_luke_hot(gpt_sw3_instruct_M)
+    haiku_cold_luke_hot(gpt_sw3_base_M)
+    haiku_cold_luke_hot(gpt_sw3_instruct_L)
+    haiku_cold_luke_hot(gpt_sw3_base_L)
+
+
+def abbrev(model):
+    abbreviate(model, load_model(model), load_tokenizer(model))
 
 
 if __name__ == '__main__':
     op_log(f"Start of gptsw3.py on {os.environ.get('EC2_TYPE')} in region {os.environ.get('REGION')} ")
     # long_running_task_with_periodic_updates(1200, 10)
-    authenticate()
-    sw3model = gpt_sw3_M
-    while True:
-        haiku_cold_luke_hot(sw3model)
-
-    # model = load_model(model_name)
-    # tokenizer = load_tokenizer(model_name)
-    # abbreviate(model_name, model, tokenizer)
-    # haiku_metrics()
+    haiku_metrics()
     # chat_multiline_with_model(sw3model)
     op_log("Shutdown")
