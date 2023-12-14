@@ -1,7 +1,6 @@
 import os
 import sys
 from datetime import datetime
-import time
 
 from huggingface_hub import login
 import torch
@@ -15,8 +14,14 @@ def op_log(message="ping"):
     print(now, " ", message)
     # Appending to a file
     with open(f'stdout_dump_{start_date}.txt', 'a', encoding="UTF-8") as file:
-        now_message = now + " " + message + "\n"
-        file.write(now_message)
+        file.write(f"{now} {message} \n")
+
+def result_log(message="ping"):
+    now = datetime.now().isoformat()
+    print(now, " ", message)
+    # Appending to a file
+    with open(f'result_{start_date}.txt', 'a', encoding="UTF-8") as file:
+        file.write(f"{now} {message} \n")
 
 
 # Global token, nice .....
@@ -70,15 +75,49 @@ def question_and_answer(task_info, model, tokenizer, contextual_framework, task_
     stop_time = datetime.now()
     run_time = stop_time - start_time
     op_log(f"Task/query ({task_info}) [{len(prompt)}]: {prompt}")
-    op_log(f"Model response [{len(response)}]: {response}")
-    op_log(f"{task_info}: {run_time}")
+    op_log(f"Model response: {response}")
+    result_log(f"{task_info} [{len(prompt)}] [{len(response)}] {run_time}")
     op_log(f"Finished task/query {task_info}")
+    return response
+
+def summary(task_info, model, tokenizer, text):
+    # prompt_w_example(text)
+    prompt = promt_wo_example(text)
+    op_log(f"Starting task/query {task_info} : {prompt}")
+    start_time = datetime.now()
+    op_log(f"Generating answer start {task_info}")
+    input_ids = tokenizer.encode(prompt, max_length=len(prompt), truncation=True, return_tensors='pt')
+    generated_token_ids = model.generate(
+        inputs=input_ids,
+        max_new_tokens=100,
+        do_sample=False,
+        top_p=1,
+        repetition_penalty=1.1
+    )[0]
+    response = tokenizer.decode(generated_token_ids, skip_special_tokens=True)
+    op_log(f"Generated answer finished {task_info}")
+    stop_time = datetime.now()
+    run_time = stop_time - start_time
+    op_log(f"Model response: {response}")
+    op_log(f"{task_info} [{len(prompt)}] [{len(response)}] {run_time}")
+    op_log(f"Finished task/query {task_info}")
+    return response
 
 
-def abbreviate(model_name, model, tokenizer):
-    question_and_answer(model_name, model, tokenizer,
-                        "Här kommer en text, skapa en sammanfattning",
-                        polens_historia())
+def prompt_w_example(text):
+    prompt_w_ex = (f"Sammanfatta följande artikel med högst 100 ord. "
+                   f"Skriv i korta meningar med högst tio ord per mening. "
+                   f"Använd följande som exempel på lämpligt format på sammanfattningen. \n"
+                   f"Tjeckiens historia är rik och turbulent. Från slaviska stammar till Moraviska och Böhmiska riken under Přemyslid-dynastin. Blev intellektuell kraft i Heliga romerska riket. Efter trettioåriga kriget under Habsburg. Växande nationalism på 1800-talet. Tjeckoslovakien bildades 1918. Ockuperades av Nazityskland under andra världskriget. Sovjetkontroll efter kriget. Pragvåren 1968 krossades. Sammetsrevolutionen 1989 ledde till demokrati. Tjeckien blev självständig 1993, nu EU-medlem. Känd för kultur och historia.\n"
+                   f"Här kommer artikeln du ska sammanfatta.:\n{text}")
+
+
+def promt_wo_example(text):
+    prompt = (
+        f"Sammanfatta följande text om Polens historia i en kort version på högst 100 ord. Använd korta meningar med maximalt tio ord per mening:\n"
+        f"\n"
+        f"{text}")
+    return prompt
 
 
 def load_model(model_name):
@@ -90,6 +129,7 @@ def load_model(model_name):
         op_log(f"Model: loading start {model_name}")
         model = AutoModelForCausalLM.from_pretrained(model_name, token=token)
         device = "cuda:0" if torch.cuda.is_available() else "cpu"
+        op_log(f"Model configed using device {device}")
         model.eval()
         model.to(device)
         op_log(f"Model: loading finished {model_name}")
@@ -109,7 +149,9 @@ def chat_multiline_with_model(name, answer_max_length=250):
         # input_text = read_multiline_input("Du: ")
         if input_text.lower() == "exit":
             break
-        question_and_answer(f"chat {name}", model, tokenizer, "Svara vänligt", input_text)
+        question_and_answer(f"chat {name}", model, tokenizer,
+                            "Du är lärare på lågstadiet. Svara som om det var ett barn som frågade. Men kort, inte mer än tio ord",
+                            input_text)
 
 
 def read_multiline_input(prompt):
@@ -133,10 +175,6 @@ def read_file_content(filename):
         return "File not found."
     except Exception as e:
         return f"An error occurred: {e}"
-
-
-def polens_historia():
-    return read_file_content("polens_historia_wikipedia.txt")
 
 
 def haiku_cold_luke_hot(model_name):
@@ -181,13 +219,27 @@ def haiku_metrics():
     haiku_cold_luke_hot(gpt_sw3_base_L)
 
 
-def abbrev(model):
-    abbreviate(model, load_model(model), load_tokenizer(model))
+def summary_of_file(model_name, filename="polens_historia_wikipedia.txt"):
+    model = load_model(model_name)
+    tokenizer = load_tokenizer(model_name)
+    content = read_file_content(filename)
+    summary(f"{model_name} summary of {filename}", model, tokenizer, content)
 
 
 if __name__ == '__main__':
     op_log(f"Start of gptsw3.py on {os.environ.get('EC2_TYPE')} in region {os.environ.get('REGION')} ")
+    command = sys.argv[1] if len(sys.argv) > 1 else "haikus"
     # long_running_task_with_periodic_updates(1200, 10)
-    haiku_metrics()
+    if command == "haiku":
+        haiku_metrics()
+    if command == "chat":
+        chat_multiline_with_model(gpt_sw3_instruct_M)
+    if command == "sammanfatta":
+        file_name = sys.argv[2] if len(sys.argv) > 2 else "polens_historia_wikipedia.txt"
+        #summary_of_file(gpt_sw3_base_XS, file_name)
+        #summary_of_file(gpt_sw3_base_S, file_name)
+        summary_of_file(gpt_sw3_base_M, file_name)
+        summary_of_file(gpt_sw3_base_L, file_name)
+
     # chat_multiline_with_model(sw3model)
     op_log("Shutdown")
