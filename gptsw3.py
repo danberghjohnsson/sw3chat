@@ -4,7 +4,7 @@ from datetime import datetime
 
 from huggingface_hub import login
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer, PreTrainedModel
 
 start_date = datetime.now().isoformat(timespec='hours')
 
@@ -48,14 +48,7 @@ def load_tokenizer(model_name):
 
 
 def question_and_answer(task_info, model, tokenizer, contextual_framework, task_query):
-    prompt = f"""    
-    <|endoftext|><s>
-    User:
-    {contextual_framework} 
-    {task_query}
-    <s>
-    Bot:
-    """.strip()
+    prompt = chat_prompt(contextual_framework, task_query)
 
     op_log(f"Starting task/query {task_info} : {prompt}")
     start_time = datetime.now()
@@ -80,10 +73,31 @@ def question_and_answer(task_info, model, tokenizer, contextual_framework, task_
     op_log(f"Finished task/query {task_info}")
     return response
 
-def summary(task_info, model, tokenizer, text):
-    # prompt_w_example(text)
-    prompt = promt_wo_example(text)
-    op_log(f"Starting task/query {task_info} : {prompt}")
+
+def chat_prompt(contextual_framework, task_query):
+    prompt = f"""    
+    <|endoftext|><s>
+    User:
+    {contextual_framework} 
+    {task_query}
+    <s>
+    Bot:
+    """.strip()
+    return prompt
+
+
+def limited(text):
+    return text if len(text) <= 100 else f"{text[:97]}..."
+
+
+
+
+def summary(task_info: str,
+            model: PreTrainedModel,
+            tokenizer: PreTrainedTokenizer,
+            text: str) -> tuple[str, str]:
+    prompt = promt_chat_wo_example(text)
+    op_log(f"Starting task/query {task_info} : {limited(prompt)}")
     start_time = datetime.now()
     op_log(f"Generating answer start {task_info}")
     input_ids = tokenizer.encode(prompt, max_length=len(prompt), truncation=True, return_tensors='pt')
@@ -94,14 +108,14 @@ def summary(task_info, model, tokenizer, text):
         top_p=1,
         repetition_penalty=1.1
     )[0]
-    response = tokenizer.decode(generated_token_ids, skip_special_tokens=True)
+    response = tokenizer.decode(generated_token_ids, skip_special_tokens=False)
     op_log(f"Generated answer finished {task_info}")
     stop_time = datetime.now()
     run_time = stop_time - start_time
     op_log(f"Model response: {response}")
-    op_log(f"{task_info} [{len(prompt)}] [{len(response)}] {run_time}")
+    op_log(f"{task_info} [Q:{len(prompt)}] [R:{len(response)}] [A:{len(response)-len(prompt)}] {run_time}")
     op_log(f"Finished task/query {task_info}")
-    return response
+    return (prompt, response)
 
 
 def prompt_w_example(text):
@@ -117,6 +131,11 @@ def promt_wo_example(text):
         f"Sammanfatta följande text om Polens historia i en kort version på högst 100 ord. Använd korta meningar med maximalt tio ord per mening:\n"
         f"\n"
         f"{text}")
+    return prompt
+
+def promt_chat_wo_example(text):
+    instruction = "Sammanfatta följande text om Polens historia i en kort version på högst 100 ord. Använd korta meningar."
+    prompt = f"<|endoftext|><s>User: {instruction}\n{text}<s>Bot:"
     return prompt
 
 
@@ -223,7 +242,7 @@ def summary_of_file(model_name, filename="polens_historia_wikipedia.txt"):
     model = load_model(model_name)
     tokenizer = load_tokenizer(model_name)
     content = read_file_content(filename)
-    summary(f"{model_name} summary of {filename}", model, tokenizer, content)
+    prompt, response = summary(f"{model_name} summary of {filename}", model, tokenizer, content)
 
 
 if __name__ == '__main__':
@@ -238,8 +257,8 @@ if __name__ == '__main__':
         file_name = sys.argv[2] if len(sys.argv) > 2 else "polens_historia_wikipedia.txt"
         #summary_of_file(gpt_sw3_base_XS, file_name)
         #summary_of_file(gpt_sw3_base_S, file_name)
-        summary_of_file(gpt_sw3_base_M, file_name)
-        summary_of_file(gpt_sw3_base_L, file_name)
+        # summary_of_file(gpt_sw3_base_M, file_name)
+        summary_of_file(gpt_sw3_instruct_M, file_name)
 
     # chat_multiline_with_model(sw3model)
     op_log("Shutdown")
