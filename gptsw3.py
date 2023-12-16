@@ -16,6 +16,7 @@ def op_log(message="ping"):
     with open(f'stdout_dump_{start_date}.txt', 'a', encoding="UTF-8") as file:
         file.write(f"{now} {message} \n")
 
+
 def result_log(message="ping"):
     now = datetime.now().isoformat()
     print(now, " ", message)
@@ -86,36 +87,57 @@ def chat_prompt(contextual_framework, task_query):
     return prompt
 
 
-def limited(text):
-    return text if len(text) <= 100 else f"{text[:97]}..."
+def limited(text, limit=200):
+    return text if len(text) <= limit else f"{text[:limit - 3]}..."
 
 
+def suffix_after(main_string: str, prefix: str) -> str:
+    index = main_string.find(prefix)
+    if index != -1:
+        return main_string[index + len(prefix):]
+    else:
+        return ""
+
+
+def count_words(s: str) -> int:
+    return len(s.split())
+
+
+def wc(s: str) -> str:
+    return f"[c:{len(s)}, w:{count_words(s)}]"
 
 
 def summary(task_info: str,
             model: PreTrainedModel,
             tokenizer: PreTrainedTokenizer,
-            text: str) -> tuple[str, str]:
-    prompt = promt_chat_wo_example(text)
+            text: str, summary_max_tokens=100) -> str:
+    instruction = f"Sammanfatta följande text i en kort version på högst {summary_max_tokens} ord. Använd korta meningar."
+    prompt = promt_summary(instruction, text)
     op_log(f"Starting task/query {task_info} : {limited(prompt)}")
     start_time = datetime.now()
-    op_log(f"Generating answer start {task_info}")
+    op_log(f"Generating response start {task_info} : {limited(prompt)}")
     input_ids = tokenizer.encode(prompt, max_length=len(prompt), truncation=True, return_tensors='pt')
     generated_token_ids = model.generate(
         inputs=input_ids,
-        max_new_tokens=100,
+        max_new_tokens=summary_max_tokens,
         do_sample=False,
         top_p=1,
         repetition_penalty=1.1
     )[0]
-    response = tokenizer.decode(generated_token_ids, skip_special_tokens=False)
-    op_log(f"Generated answer finished {task_info}")
+    response = tokenizer.decode(generated_token_ids, skip_special_tokens=False).strip()
+    op_log(f"Generated respomse finished {task_info}")
     stop_time = datetime.now()
     run_time = stop_time - start_time
-    op_log(f"Model response: {response}")
-    op_log(f"{task_info} [Q:{len(prompt)}] [R:{len(response)}] [A:{len(response)-len(prompt)}] {run_time}")
+    # op_log(f"Model response: {response}")
+    answer = response_answer(response)
+    op_log(f"Answer [{wc(answer)} {run_time}]: {answer}")
+    op_log(f"{task_info} [Q:{len(prompt)}] [R:{len(response)}] [A:{len(answer)}] {run_time}")
     op_log(f"Finished task/query {task_info}")
-    return (prompt, response)
+    return answer
+
+
+def response_answer(response):
+    return suffix_after(response, "Bot:").strip()
 
 
 def prompt_w_example(text):
@@ -128,18 +150,26 @@ def prompt_w_example(text):
 
 def promt_wo_example(text):
     prompt = (
-        f"Sammanfatta följande text om Polens historia i en kort version på högst 100 ord. Använd korta meningar med maximalt tio ord per mening:\n"
+        f"Sammanfatta följande text om Polens historia i en kort version på högst 100 ord. Använd korta meningar med "
+        f"maximalt tio ord per mening:\n"
         f"\n"
         f"{text}")
     return prompt
 
-def promt_chat_wo_example(text):
-    instruction = "Sammanfatta följande text om Polens historia i en kort version på högst 100 ord. Använd korta meningar."
-    prompt = f"<|endoftext|><s>User: {instruction}\n{text}<s>Bot:"
-    return prompt
+
+def promt_summary(instruction, text):
+    return f"{endoftext_token()}{s_token()}User: {instruction}\n{text}{s_token()}Bot:"
 
 
-def load_model(model_name):
+def s_token():
+    return "<s>"
+
+
+def endoftext_token():
+    return "<|endoftext|>"
+
+
+def load_model(model_name: str) -> AutoModelForCausalLM:
     if os.path.exists("/mnt/gptsw3-models"):
         op_log(f"Model: loading from EBS start {model_name}")
         model = AutoModelForCausalLM.from_pretrained(model_name, token=token, cache_dir="/mnt/gptsw3-models")
@@ -238,11 +268,14 @@ def haiku_metrics():
     haiku_cold_luke_hot(gpt_sw3_base_L)
 
 
-def summary_of_file(model_name, filename="polens_historia_wikipedia.txt"):
+def summary_of_file(model_name, filename="polens_historia_wikipedia.txt", max_words=250):
     model = load_model(model_name)
     tokenizer = load_tokenizer(model_name)
     content = read_file_content(filename)
-    prompt, response = summary(f"{model_name} summary of {filename}", model, tokenizer, content)
+    answer = summary(f"{model_name} summary of {filename}",
+                     model, tokenizer,
+                     content, summary_max_tokens=max_words)
+    return answer
 
 
 if __name__ == '__main__':
@@ -255,10 +288,11 @@ if __name__ == '__main__':
         chat_multiline_with_model(gpt_sw3_instruct_M)
     if command == "sammanfatta":
         file_name = sys.argv[2] if len(sys.argv) > 2 else "polens_historia_wikipedia.txt"
-        #summary_of_file(gpt_sw3_base_XS, file_name)
-        #summary_of_file(gpt_sw3_base_S, file_name)
+        max_words = int(sys.argv[3]) if len(sys.argv) > 2 else 100
+        # summary_of_file(gpt_sw3_base_XS, file_name)
+        # summary_of_file(gpt_sw3_base_S, file_name)
         # summary_of_file(gpt_sw3_base_M, file_name)
-        summary_of_file(gpt_sw3_instruct_M, file_name)
-
+        answer = summary_of_file(gpt_sw3_instruct_M, file_name, max_words)
+        op_log(f"Summary of {file_name} restricted to {max_words}: [{wc(answer)}:\n{answer}");
     # chat_multiline_with_model(sw3model)
     op_log("Shutdown")
