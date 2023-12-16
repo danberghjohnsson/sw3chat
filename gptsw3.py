@@ -31,6 +31,7 @@ token = ""
 gpt_sw3_instruct_XS = "AI-Sweden-Models/gpt-sw3-126m-instruct"
 gpt_sw3_instruct_M = "AI-Sweden-Models/gpt-sw3-1.3b-instruct"
 gpt_sw3_instruct_L = "AI-Sweden-Models/gpt-sw3-6.7b-v2-instruct"
+gpt_sw3_instruct_L_quant = "AI-Sweden-Models/gpt-sw3-6.7b-v2-instruct-4bit-gptq"
 gpt_sw3_instruct_XL = "AI-Sweden-Models/gpt-sw3-20b-instruct"
 
 gpt_sw3_base_XS = "AI-Sweden-Models/gpt-sw3-126m"
@@ -39,6 +40,8 @@ gpt_sw3_base_M = "AI-Sweden-Models/gpt-sw3-1.3b"
 gpt_sw3_base_L = "AI-Sweden-Models/gpt-sw3-6.7b-v2"
 gpt_sw3_base_XL = "AI-Sweden-Models/gpt-sw3-20b"
 gpt_sw3_base_XXL = "AI-Sweden-Models/gpt-sw3-40b"
+
+
 
 
 def load_tokenizer(model_name):
@@ -169,7 +172,7 @@ def endoftext_token():
     return "<|endoftext|>"
 
 
-def load_model(model_name: str) -> AutoModelForCausalLM:
+def load_model(model_name: str) -> PreTrainedModel:
     if os.path.exists("/mnt/gptsw3-models"):
         op_log(f"Model: loading from EBS start {model_name}")
         model = AutoModelForCausalLM.from_pretrained(model_name, token=token, cache_dir="/mnt/gptsw3-models")
@@ -269,18 +272,21 @@ def haiku_metrics():
 
 
 def summary_of_file(model_name, filename="polens_historia_wikipedia.txt", max_words=250):
-    model = load_model(model_name)
+    model: PreTrainedModel = load_model(model_name)
     tokenizer = load_tokenizer(model_name)
     content = read_file_content(filename)
+    op_log(f"Making summary of {file_name} {wc(content)} restricted to {max_words}")
     answer = summary(f"{model_name} summary of {filename}",
                      model, tokenizer,
                      content, summary_max_tokens=max_words)
-    return answer
+    op_log(f"Summary of {file_name} {wc(content)} restricted to {max_words}: {wc(answer)}:\n{answer}")
 
 
 if __name__ == '__main__':
     op_log(f"Start of gptsw3.py on {os.environ.get('EC2_TYPE')} in region {os.environ.get('REGION')} ")
+    op_log(str(sys.argv))
     command = sys.argv[1] if len(sys.argv) > 1 else "haikus"
+    start_date = datetime.now()
     # long_running_task_with_periodic_updates(1200, 10)
     if command == "haiku":
         haiku_metrics()
@@ -292,7 +298,7 @@ if __name__ == '__main__':
         # summary_of_file(gpt_sw3_base_XS, file_name)
         # summary_of_file(gpt_sw3_base_S, file_name)
         # summary_of_file(gpt_sw3_base_M, file_name)
-        answer = summary_of_file(gpt_sw3_instruct_M, file_name, max_words)
-        op_log(f"Summary of {file_name} restricted to {max_words}: [{wc(answer)}:\n{answer}");
+        summary_of_file(gpt_sw3_instruct_L, file_name, max_words)
     # chat_multiline_with_model(sw3model)
-    op_log("Shutdown")
+    stop_date = datetime.now()
+    op_log(f"Shutdown after {stop_date-start_date}")
