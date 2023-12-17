@@ -6,14 +6,15 @@ from huggingface_hub import login
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer, PreTrainedModel
 
-start_date = datetime.now().isoformat(timespec='hours')
+start_date = datetime.now().isoformat(timespec='hours', sep='T')
+dump_file = f'stdout_dump_{start_date}.txt'
 
 
 def op_log(message="ping"):
-    now = datetime.now().isoformat()
+    now = datetime.now().isoformat(sep='T')
     print(now, " ", message)
     # Appending to a file
-    with open(f'stdout_dump_{start_date}.txt', 'a', encoding="UTF-8") as file:
+    with open(dump_file, 'a', encoding="UTF-8") as file:
         file.write(f"{now} {message} \n")
 
 
@@ -114,7 +115,8 @@ def summary(task_info: str,
             model: PreTrainedModel,
             tokenizer: PreTrainedTokenizer,
             text: str, summary_max_tokens=100) -> str:
-    instruction = f"Sammanfatta följande text i en kort version på högst {summary_max_tokens} ord. Använd korta meningar."
+    instruction = (f"Sammanfatta följande text i en kort version på högst {summary_max_tokens} ord. "
+                   f"Använd korta meningar.")
     prompt = promt_summary(instruction, text)
     op_log(f"Starting task/query {task_info} : {limited(prompt)}")
     start_time = datetime.now()
