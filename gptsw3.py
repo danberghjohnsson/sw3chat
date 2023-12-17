@@ -296,7 +296,7 @@ if __name__ == '__main__':
         chat_multiline_with_model(gpt_sw3_instruct_M)
     if command == "sammanfatta":
         file_name = sys.argv[2] if len(sys.argv) > 2 else "polens_historia_wikipedia.txt"
-        max_words = int(sys.argv[3]) if len(sys.argv) > 2 else 100
+        max_words = int(sys.argv[3]) if len(sys.argv) > 3 else 100
         # summary_of_file(gpt_sw3_base_XS, file_name)
         # summary_of_file(gpt_sw3_base_S, file_name)
         # summary_of_file(gpt_sw3_base_M, file_name)
