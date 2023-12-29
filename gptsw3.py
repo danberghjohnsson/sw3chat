@@ -6,28 +6,11 @@ from huggingface_hub import login
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer, PreTrainedModel
 
+instance_type = os.environ.get('EC2_TYPE')
+
 start_date = datetime.now().isoformat(timespec='hours', sep='T')
-dump_file = f'stdout_dump_{start_date}.txt'
-
-
-def op_log(message="ping"):
-    now = datetime.now().isoformat(sep='T')
-    print(now, " ", message)
-    # Appending to a file
-    with open(dump_file, 'a', encoding="UTF-8") as file:
-        file.write(f"{now} {message} \n")
-
-
-def result_log(message="ping"):
-    now = datetime.now().isoformat()
-    print(now, " ", message)
-    # Appending to a file
-    with open(f'result_{start_date}.txt', 'a', encoding="UTF-8") as file:
-        file.write(f"{now} {message} \n")
-
-
-# Global token, nice .....
-token = ""
+dump_file = f'output/stdout_dump_{start_date}.txt'
+result_file = f"output/result_{start_date}.txt"
 
 gpt_sw3_instruct_XS = "AI-Sweden-Models/gpt-sw3-126m-instruct"
 gpt_sw3_instruct_M = "AI-Sweden-Models/gpt-sw3-1.3b-instruct"
@@ -42,6 +25,27 @@ gpt_sw3_base_L = "AI-Sweden-Models/gpt-sw3-6.7b-v2"
 gpt_sw3_base_XL = "AI-Sweden-Models/gpt-sw3-20b"
 gpt_sw3_base_XXL = "AI-Sweden-Models/gpt-sw3-40b"
 
+def op_log(message="ping"):
+    now = datetime.now().isoformat(sep='T')
+    print(now, " ", message)
+    # Appending to a file
+    with open(dump_file, 'a', encoding="UTF-8") as file:
+        file.write(f"{now} {message} \n")
+
+
+def result_log(message="ping"):
+    now = datetime.now().isoformat()
+    print(now, " ", message)
+    # Appending to a file
+    with open(result_file, 'a', encoding="UTF-8") as file:
+        file.write(f"{now} {message} \n")
+
+
+# Global token, nice .....
+token = ""
+
+
+
 
 
 
@@ -55,7 +59,7 @@ def load_tokenizer(model_name):
 def question_and_answer(task_info, model, tokenizer, contextual_framework, task_query):
     prompt = chat_prompt(contextual_framework, task_query)
 
-    op_log(f"Starting task/query {task_info} : {prompt}")
+    op_log(f"Starting task/query {task_info} : {limited(prompt)}")
     start_time = datetime.now()
     op_log(f"Generating answer start {task_info}")
     input_ids = tokenizer.encode(prompt, return_tensors='pt')
@@ -114,14 +118,16 @@ def wc(s: str) -> str:
 def summary(task_info: str,
             model: PreTrainedModel,
             tokenizer: PreTrainedTokenizer,
-            text: str, summary_max_tokens=100) -> str:
+            text: str, summary_max_tokens, prompter) -> str:
     instruction = (f"Sammanfatta följande text i en kort version på högst {summary_max_tokens} ord. "
                    f"Använd korta meningar.")
-    prompt = promt_summary(instruction, text)
+    summary = prompter(instruction, text)
+    prompt = summary
     op_log(f"Starting task/query {task_info} : {limited(prompt)}")
     start_time = datetime.now()
     op_log(f"Generating response start {task_info} : {limited(prompt)}")
     input_ids = tokenizer.encode(prompt, max_length=len(prompt), truncation=True, return_tensors='pt')
+    op_log(f"Generating response, tokenized into tokens [{input_ids.size()}]: {input_ids}")
     generated_token_ids = model.generate(
         inputs=input_ids,
         max_new_tokens=summary_max_tokens,
@@ -130,14 +136,14 @@ def summary(task_info: str,
         repetition_penalty=1.1
     )[0]
     response = tokenizer.decode(generated_token_ids, skip_special_tokens=False).strip()
-    op_log(f"Generated respomse finished {task_info}")
+    op_log(f"Generating response finished {task_info}")
     stop_time = datetime.now()
     run_time = stop_time - start_time
     # op_log(f"Model response: {response}")
     answer = response_answer(response)
     op_log(f"Answer [{wc(answer)} {run_time}]: {answer}")
     op_log(f"{task_info} [Q:{len(prompt)}] [R:{len(response)}] [A:{len(answer)}] {run_time}")
-    op_log(f"Finished task/query {task_info}")
+    op_log(f"Finished summary {task_info}")
     return answer
 
 
@@ -162,7 +168,7 @@ def promt_wo_example(text):
     return prompt
 
 
-def promt_summary(instruction, text):
+def promt_summary_style(instruction, text):
     return f"{endoftext_token()}{s_token()}User: {instruction}\n{text}{s_token()}Bot:"
 
 
@@ -273,27 +279,56 @@ def haiku_metrics():
     haiku_cold_luke_hot(gpt_sw3_base_L)
 
 
-def summary_of_file(model_name, filename="polens_historia_wikipedia.txt", max_words=250):
-    model: PreTrainedModel = load_model(model_name)
-    tokenizer = load_tokenizer(model_name)
+def summary_of_file(model_name, filename, max_words=250):
     content = read_file_content(filename)
-    op_log(f"Making summary of {file_name} {wc(content)} restricted to {max_words}")
+    op_log(f"Making summary of {filename} {wc(content)} restricted to {max_words}")
+
+    tokenizer = load_tokenizer(model_name)
+    model: PreTrainedModel = load_model(model_name)
+
     answer = summary(f"{model_name} summary of {filename}",
                      model, tokenizer,
-                     content, summary_max_tokens=max_words)
-    op_log(f"Summary of {file_name} {wc(content)} restricted to {max_words}: {wc(answer)}:\n{answer}")
+                     content, summary_max_tokens=max_words, prompter=promt_summary_style)
+    result_log(f"Summary of {filename} {wc(content)} restricted to {max_words}: {wc(answer)}:\n{answer}")
+
+def short_story_questions():
+    model_name = gpt_sw3_instruct_L
+    tokenizer = load_tokenizer(model_name)
+    model: PreTrainedModel = load_model(model_name)
+    story = read_file_content("data/novell_w1048.txt")
+    with open("novell_fragor_ren.txt", 'r') as file:
+        for story_question in file:
+            op_log(story_question)
+            instruction = (f"Läs följnade novell. Besvara sen frågan. \n"
+                           f"{story}"
+                           f"{story_question}")
+            response = question_and_answer(f"Ansering {story_question}", model, tokenizer,
+                                 "Du är litterärt kunning",
+                                 instruction)
+            result_log(f"{story_question}"
+                       f"{response_answer(response)}")
+
+
 
 
 if __name__ == '__main__':
-    op_log(f"Start of gptsw3.py on {os.environ.get('EC2_TYPE')} in region {os.environ.get('REGION')} ")
     op_log(str(sys.argv))
+    op_log(f"Start of gptsw3.py on {instance_type} in region {os.environ.get('REGION')} ")
     command = sys.argv[1] if len(sys.argv) > 1 else "haikus"
     start_date = datetime.now()
     # long_running_task_with_periodic_updates(1200, 10)
+    if command == "novell":
+        short_story_questions()
     if command == "haiku":
         haiku_metrics()
     if command == "chat":
         chat_multiline_with_model(gpt_sw3_instruct_M)
+    if command == "analysera":
+        file_name = sys.argv[2] if len(sys.argv) > 2 else "polens_historia_wikipedia.txt"
+        max_words = int(sys.argv[3]) if len(sys.argv) > 3 else 100
+        instruct = sys.argv[2] if len(sys.argv) > 2 else f"Sammanfatta inom {max_words} ord"
+        prompt_builder = lambda text : promt_summary_style("Detta har en VD skrivit. Hur går det för företaget?", text)
+        summary_of_file(gpt_sw3_instruct_M, filename=file_name, max_words=max_words)
     if command == "sammanfatta":
         file_name = sys.argv[2] if len(sys.argv) > 2 else "polens_historia_wikipedia.txt"
         max_words = int(sys.argv[3]) if len(sys.argv) > 3 else 100
@@ -301,6 +336,11 @@ if __name__ == '__main__':
         # summary_of_file(gpt_sw3_base_S, file_name)
         # summary_of_file(gpt_sw3_base_M, file_name)
         summary_of_file(gpt_sw3_instruct_L, file_name, max_words)
+    if command == "cv":
+        cv_file_name = sys.argv[2]
+        assignment_file_name = sys.argv[3]
+        # cv_match_files(cv_file_name, assignment_file_name)
+
     # chat_multiline_with_model(sw3model)
     stop_date = datetime.now()
     op_log(f"Shutdown after {stop_date-start_date}")
