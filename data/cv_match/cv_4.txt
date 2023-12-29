@@ -1,0 +1,35 @@
+Konsultprofil: Emma Johansson - Mjukvaruutvecklare med Inriktning på IoT och Inbyggda System
+Kontaktinformation:
+
+E-post: emmajohansson@exempel.com
+Telefon: 075-678 901 23
+LinkedIn: linkedin.com/in/emmajohansson
+Profilöversikt:
+Emma Johansson är en mjukvaruutvecklare med 5 års erfarenhet, specialiserad på Internet of Things (IoT) och inbyggda system. Med en ingenjörsexamen från Chalmers tekniska högskola, har hon utvecklat djupa kunskaper inom C/C++ och Python. Emma har framgångsrikt genomfört flera IoT-projekt, varav ett för smart hem-teknologi som vann ett innovationspris. Hennes styrka ligger i att kombinera hårdvara och mjukvara för att skapa integrerade och användarvänliga lösningar.
+
+Utbildning:
+
+Ingenjörsexamen i Elektroteknik, Chalmers tekniska högskola
+Teknisk Expertis:
+
+Programmeringsspråk: C, C++, Python
+Områden: IoT, Inbyggda System
+Verktyg och Plattformar: Arduino, Raspberry Pi, ESP32
+Protokoll: MQTT, CoAP, Bluetooth Low Energy (BLE)
+Yrkeserfarenhet:
+
+Mjukvaruutvecklare, IoT Innovations AB (2018 - Nu)
+Utvecklade och implementerade mjukvara för IoT-enheter.
+Samarbetade i projekt för smarta hem-lösningar.
+Arbetade med produktutveckling från koncept till färdig produkt.
+Projektexempel:
+
+Smart Hem System: Designade och utvecklade ett prisbelönt smart hem-system.
+IoT-baserad Miljöövervakning: Skapade en systemlösning för miljöövervakning med inbyggda sensorer och trådlös kommunikation.
+Personliga Egenskaper:
+
+Innovativ och kreativ problemlösare.
+Stark i tvärfunktionella team och projektledning.
+Passionerad om att skapa teknik som förbättrar vardagslivet.
+Referenser:
+Tillhandahålls på begäran.

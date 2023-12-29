@@ -1,0 +1,37 @@
+Konsultprofil: Carlos Mendoza - Senior Dataingenjör med Expertis inom Big Data och Machine Learning
+Kontaktinformation:
+
+E-post: carlosmendoza@exempel.com
+Telefon: 072-345 678 90
+LinkedIn: linkedin.com/in/carlosmendoza
+Profilöversikt:
+Carlos Mendoza är en veteran inom datahantering och analys, med över 15 års erfarenhet. Han har en omfattande bakgrund inom big data-teknologier som Hadoop och Spark och har specialiserat sig på att integrera machine learning-modeller för dataanalys i storskaliga företagsmiljöer. Carlos är känd för sin förmåga att omsätta komplex data till affärsvärde och har lett flera framgångsrika dataomvandlingsprojekt.
+
+Utbildning:
+
+M.Sc. i Datavetenskap, Uppsala Universitet
+Certifierad i Big Data Management och Machine Learning
+Teknisk Expertis:
+
+Programmeringsspråk: Java, Scala, Python
+Big Data Tekniker: Apache Spark, Hadoop, Kafka
+Databaser: Cassandra, HBase, MySQL
+Dataanalys och Visualisering: Tableau, D3.js
+Machine Learning: TensorFlow, PySpark MLlib
+Yrkeserfarenhet:
+
+Senior Data Engineer, BigDataSolutions AB (2010 - Nu)
+Ledde utvecklingen av storskaliga datahanteringsprojekt.
+Implementerade och optimerade Spark-applikationer för högpresterande dataanalys.
+Samarbetade med team av dataforskare för att bygga avancerade prediktiva modeller.
+Projektexempel:
+
+Big Data Plattform för Finansmarknaden: Skapade en realtid dataanalysplattform för finansiell marknadsdata med Apache Spark, vilket möjliggjorde snabbare insikter och beslutsfattande.
+Distribuerad Datalagringslösning: Implementerade en Hadoop-baserad lagringslösning för att effektivisera datalagring och bearbetning.
+Personliga Egenskaper:
+
+Djupgående kunskap inom dataarkitektur och systemdesign.
+Stark analytisk förmåga och erfarenhet av att lösa komplexa tekniska utmaningar.
+Utmärkt i att leda team och driva projekt från koncept till fullföljande.
+Referenser:
+Tillhandahålls på begäran.

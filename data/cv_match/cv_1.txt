@@ -1,0 +1,33 @@
+Konsultprofil: Aisha Al-Khalid - Junior Fullstack-utvecklare med Fokus på JavaScript och React
+Kontaktinformation:
+
+E-post: aishaalkhalid@exempel.com
+Telefon: 070-123 456 78
+LinkedIn: linkedin.com/in/aishaalkhalid
+Profilöversikt:
+Aisha Al-Khalid är en ambitiös juniorutvecklare med 2 års erfarenhet inom mjukvaruutveckling, specialiserad på JavaScript-teknologier, särskilt React och Node.js. Med en grundutbildning i datavetenskap från Stockholms universitet, har Aisha visat en stark förmåga att snabbt anpassa sig till nya teknologier och arbetsmiljöer. Hon är passionerad om att bygga användarvänliga och interaktiva webbapplikationer.
+
+Utbildning:
+
+B.Sc. i Datavetenskap, Stockholms Universitet
+Teknisk Expertis:
+
+Programmeringsspråk: JavaScript, React, Node.js, HTML5, CSS3
+Verktyg och Ramverk: Redux, Express.js, MongoDB, Git, Webpack
+Yrkeserfarenhet:
+
+Junior Fullstack-utvecklare, WebSolutions AB (2020 - Nu)
+Utvecklade och underhöll flera webbapplikationer i JavaScript och React.
+Arbetade tätt med UX/UI-designers för att förbättra användarupplevelsen på webbplatsen.
+Implementerade back-end API:er med Node.js och Express.js.
+Projektexempel:
+
+E-handelswebbplats: Ledde frontend-utvecklingen av en e-handelswebbplats med React, integrerade betalningsgateway och användarautentisering.
+Interaktivt Utbildningsverktyg: Utvecklade ett interaktivt verktyg för onlineutbildning som använde React för dynamiska gränssnitt och Node.js för serverhantering.
+Personliga Egenskaper:
+
+Starkt engagemang för att lära sig nya teknologier och utvecklingsmetoder.
+Utmärkt samarbetsförmåga och förmågan att arbeta effektivt i team.
+Kreativ problemlösare med en fokus på användarcentrerad design.
+Referenser:
+Tillhandahålls på begäran.
