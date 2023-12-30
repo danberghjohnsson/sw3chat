@@ -171,6 +171,28 @@ def promt_wo_example(text):
 def promt_summary_style(instruction, text):
     return f"{endoftext_token()}{s_token()}User: {instruction}\n{text}{s_token()}Bot:"
 
+def promt_cv_match(cv, assignment):
+    pre_text = ("Jag arbetar med en upphandling inom systemutveckling. Jag behöver avgöra hur väl en konsultprofil "
+                "matchar uppdraget som det breskrivs i upphandlingen. Läs följande konsultprofil och beskrivning av uppdrag. "
+                "Bedöm sedan konsultens lämplighet för uppdraget.")
+    cv_text = (f"Konsultprofil:\n"
+               f"{cv}")
+    assignment_text = (f"Beskrivning av uppdraget:\n"
+                       f"{assignment}")
+    return (f"{endoftext_token()}{s_token()}"
+            f"User: {pre_text}\n"
+            f"{cv_text}\n"
+            f"{assignment_text}\n"
+            f"Beskriv hur väl konsultprofilen matchar det beskrivna uppdraget. \n"
+            f"Ge även ett betyg enligt följande skala."
+            f"5 (Perfekt): Konsultens färdigheter och erfarenhet matchar exakt med uppdragets krav."
+            f"4 (Mycket bra): Konsulten har starka relevanta färdigheter, även om det inte är en exakt match."
+            f"3 (Bra): Konsulten har relevanta färdigheter men kanske inte den fullständiga erfarenheten eller specialiseringen som krävs."
+            f"2 (OK): Det finns viss överlappning i färdigheter och erfarenheter, men det är inte en idealisk match."
+            f"1 (Dålig): Konsultens färdigheter och erfarenhetsområde överensstämmer inte med uppdragets krav."
+            f"Svara med ett omdöme på högst 20 ord, sedan betyg mellan 1 och 5."            
+            f"{s_token()}Bot:")
+
 
 def s_token():
     return "<s>"
@@ -309,6 +331,52 @@ def short_story_questions():
                        f"{response_answer(response)}")
 
 
+def cv_match_assignment(tokenizer, model, assignment, cv):
+    task_info = f"Matching {limited(cv, 20)} with {limited(assignment, 20)}"
+    prompt =  promt_cv_match(cv, assignment)
+    op_log(f"Starting task/query {task_info} : {limited(prompt)}")
+    start_time = datetime.now()
+    op_log(f"Generating response start {task_info} : {limited(prompt)}")
+    input_ids = tokenizer.encode(prompt, max_length=len(prompt), truncation=True, return_tensors='pt')
+    op_log(f"Generating response, tokenized into tokens [{input_ids.size()}]")
+    generated_token_ids = model.generate(
+        inputs=input_ids,
+        max_new_tokens=120,
+        do_sample=False,
+        top_p=1,
+        repetition_penalty=1.1
+    )[0]
+    response = tokenizer.decode(generated_token_ids, skip_special_tokens=False).strip()
+    op_log(f"Generating response finished {task_info}")
+    stop_time = datetime.now()
+    run_time = stop_time - start_time
+    # op_log(f"Model response: {response}")
+    answer = response_answer(response)
+    op_log(f"Answer [{wc(answer)} {run_time}]: {answer}")
+    op_log(f"{task_info} [Q:{len(prompt)}] [R:{len(response)}] [A:{len(answer)}] {run_time}")
+    op_log(f"Finished summary {task_info}")
+    return answer
+
+
+def cv_match_files(cv_file_name, assignment_file_name, model_name):
+    op_log(f"Starting match of cv {cv_file_name} towards assignment {assignment_file_name}")
+    cv = read_file_content(cv_file_name)
+    assignment = read_file_content(assignment_file_name)
+    op_log(f"Matching "
+           f"cv {cv_file_name} {wc(cv)} {limited(cv, 50)} "
+           f"with "
+           f"assignment {assignment_file_name} {wc(assignment)} {limited(assignment, 50)} ")
+
+    answer = cv_match_assignment(load_tokenizer(model_name),
+                                 load_model(model_name),
+                                 assignment,
+                                 cv)
+    result_log(f"Match of {model_name} "
+               f"cv {limited(cv, 20)} {wc(cv)} "
+               f"with "
+               f"assignment  {limited(assignment, 20)} {wc(assignment)}:\n"
+               f"{answer}")
+
 
 
 if __name__ == '__main__':
@@ -339,7 +407,15 @@ if __name__ == '__main__':
     if command == "cv":
         cv_file_name = sys.argv[2]
         assignment_file_name = sys.argv[3]
-        # cv_match_files(cv_file_name, assignment_file_name)
+        cv_match_files(cv_file_name, assignment_file_name, gpt_sw3_instruct_L)
+    if command == "cv_all":
+        for model in [gpt_sw3_instruct_L]:
+            for assignment_n in range(1,5):
+                assignment_file_name = f"data/cv_match/assignment_{assignment_n}.txt"
+                for cv_n in range(1,6):
+                    cv_file_name = f"data/cv_match/cv_{cv_n}.txt"
+                    cv_match_files(cv_file_name, assignment_file_name, model)
+
 
     # chat_multiline_with_model(sw3model)
     stop_date = datetime.now()

@@ -1,0 +1,26 @@
+Uppdragsbeskrivning: IoT-baserat Smart Hem System
+Upphandlande Organisation: HomeTech Innovations AB
+
+Projektöversikt:
+HomeTech Innovations AB söker en erfaren mjukvaruutvecklare med specialisering inom IoT och inbyggda system för att utveckla ett avancerat smart hem-system. Projektet innefattar utveckling av både hårdvara och mjukvara för att skapa integrerade lösningar för hemautomation.
+
+Projektspecifikationer:
+
+IoT-utveckling: Design och implementering av IoT-lösningar för hemautomation, inklusive sensorer och styrenheter.
+Programmering av Inbyggda System: Utveckling av mjukvara för inbyggda enheter, användning av C, C++ eller Python.
+Integration med Mobilapplikationer: Samverkan med apputvecklare för att skapa en användarvänlig mobilapplikation för systemstyrning.
+Prototypning och Tester: Skapa och testa prototyper, genomföra användartester för att säkerställa funktionalitet och användarvänlighet.
+Dokumentation: Utveckla teknisk dokumentation för systemet och dess komponenter.
+Krav på Konsulten:
+
+Stark bakgrund inom IoT och inbyggda system.
+Erfarenhet av programmering med C, C++ eller Python.
+Förmåga att arbeta tvärfunktionellt med apputvecklingsteam.
+Erfarenhet av att utveckla användarcentrerade tekniklösningar.
+Projektlängd och Placering:
+
+Uppdragets längd: 12 månader.
+Placering: Malmö, med möjlighet till viss distansarbete.
+Ansökningsprocess:
+Intresserade konsulter ombeds skicka in sina förslag inklusive relevant erfarenhet och tidigare arbetsprover senast den [inlämningens datum].
+

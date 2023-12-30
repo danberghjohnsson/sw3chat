@@ -1,0 +1,26 @@
+Upphandlingsbeskrivning: Utveckling av Modern Webapplikation
+Upphandlande Organisation: WebTech Solutions AB
+
+Projektöversikt:
+WebTech Solutions AB söker en junior fullstack-utvecklare för att delta i utvecklingen av en modern och responsiv webapplikation. Projektet syftar till att skapa en användarvänlig och interaktiv plattform för e-handel, med fokus på en sömlös kundupplevelse.
+
+Projektspecifikationer:
+
+Frontend-utveckling: Skapa och implementera en dynamisk och responsiv användargränssnitt med React.js.
+Backend-utveckling: Utveckla server-side logik och API:er med Node.js och Express.js.
+Databashantering: Integrera och hantera databasinteraktioner, företrädesvis med MongoDB.
+Samarbete med UX/UI-Designer: Arbeta nära tillsammans med vårt designerteam för att säkerställa en hög användarvänlighet och estetik i applikationen.
+Testning och Kvalitetssäkring: Delta i testning av applikationen för att säkerställa funktionalitet och prestanda.
+Krav på Konsulten:
+
+Erfarenhet av JavaScript-utveckling, specifikt med React och Node.js.
+Förmåga att skriva ren, underhållbar och effektiv kod.
+Tidigare erfarenhet av arbete med databaser, företrädesvis MongoDB.
+God samarbetsförmåga och erfarenhet av att arbeta i agila utvecklingsteam.
+Grundläggande kunskaper i versionhantering, exempelvis med Git.
+Projektlängd och Placering:
+
+Uppdragets längd: 6 månader med möjlighet till förlängning.
+Placering: Stockholm, med möjlighet till delvis distansarbete.
+Ansökningsprocess:
+Intresserade konsulter eller konsultbolag ombeds skicka in sina förslag inklusive CV och tidigare arbetsprover senast den [inlämningens datum]. Upphandlingen följer en snabb process och vi planerar att fatta beslut inom två veckor efter sista ansökningsdag.

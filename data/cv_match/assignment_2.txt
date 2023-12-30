@@ -1,0 +1,26 @@
+Uppdragsbeskrivning: Systemintegration och Cloud Migration Project
+Upphandlande Organisation: NextGen Tech AB
+
+Projektöversikt:
+NextGen Tech AB söker en erfaren mjukvaruarkitekt eller senior dataingenjör för att leda ett projekt inriktat på systemintegration och migration av befintliga företagssystem till molnplattformar. Projektet syftar till att förbättra systemeffektiviteten och skalbarheten genom att integrera befintliga system med moderna molnlösningar.
+
+Projektspecifikationer:
+
+Systemintegration: Designa och genomföra integrationsstrategier för att koppla samman befintliga system med nya molnbaserade tjänster.
+Cloud Migration: Koordinera och genomföra migration av befintliga företagsapplikationer till molnplattformar som AWS eller Azure.
+Microservices-arkitektur: Utveckla och implementera microservices-lösningar för att främja skalbarhet och underhållbarhet.
+Samarbete: Arbeta nära med IT-avdelningen och affärsenheter för att säkerställa en smidig övergång och minimera driftstopp.
+Teknisk Dokumentation: Utveckla tekniska riktlinjer och dokumentation för systemintegration och molnmigration.
+Krav på Konsulten:
+
+Flerårig erfarenhet av systemintegration och mjukvaruarkitektur.
+Erfarenhet av att arbeta med molnplattformar, särskilt AWS eller Azure.
+Kunskap i microservices och container-teknologier som Docker och Kubernetes.
+Stark problemlösningsförmåga och erfarenhet av att leda tekniska projekt.
+God kommunikationsförmåga och förmåga att arbeta i team.
+Projektlängd och Placering:
+
+Uppdragets längd: Upp till 12 månader.
+Placering: Göteborg, med möjlighet till delvis distansarbete.
+Ansökningsprocess:
+Intresserade konsulter eller konsultbolag ombeds skicka in sina förslag inklusive CV och referenser från tidigare liknande projekt senast den [inlämningens datum].
