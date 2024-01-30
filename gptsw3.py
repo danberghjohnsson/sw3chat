@@ -51,7 +51,7 @@ token = ""
 
 def load_tokenizer(model_name):
     op_log(f"Tokenizer: loading start {model_name}")
-    tokenizer = AutoTokenizer.from_pretrained(model_name, token=token)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
     op_log(f"Tokenizer: loading finished {model_name}")
     return tokenizer
 
@@ -67,7 +67,7 @@ def question_and_answer(task_info, model, tokenizer, contextual_framework, task_
         inputs=input_ids,
         max_new_tokens=200,
         do_sample=True,
-        temperature=0.6,
+        temperature=2.0,
         top_p=1,
         eos_token_id=tokenizer.encode('<s>'),
         repetition_penalty=1.1
@@ -209,7 +209,7 @@ def load_model(model_name: str) -> PreTrainedModel:
         op_log(f"Model: loading finished {model_name}")
     else:
         op_log(f"Model: loading start {model_name}")
-        model = AutoModelForCausalLM.from_pretrained(model_name, token=token)
+        model = AutoModelForCausalLM.from_pretrained(model_name)
         device = "cuda:0" if torch.cuda.is_available() else "cpu"
         op_log(f"Model configed using device {device}")
         model.eval()
@@ -222,7 +222,7 @@ def chat_multiline_with_model(name, answer_max_length=250):
     op_log("Tokenizer: loading " + name)
     tokenizer = load_tokenizer(name)
     op_log("Model: loading " + name)
-    model = AutoModelForCausalLM.from_pretrained(name, token=token)
+    model = AutoModelForCausalLM.from_pretrained(name)
     op_log("Model: loaded " + name)
     print("Starting chat with GPT model. Type 'exit' to end.")
     while True:
@@ -380,6 +380,7 @@ def cv_match_files(cv_file_name, assignment_file_name, model_name):
 
 
 if __name__ == '__main__':
+    print(os.environ.get('HOSTNAME'))
     op_log(str(sys.argv))
     op_log(f"Start of gptsw3.py on {instance_type} in region {os.environ.get('REGION')} ")
     command = sys.argv[1] if len(sys.argv) > 1 else "haikus"
